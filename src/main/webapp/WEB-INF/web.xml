@@ -6,6 +6,10 @@
     <servlet>
         <servlet-name>CounterServlet</servlet-name>
         <servlet-class>CounterServlet</servlet-class>
+        <init-param>
+            <param-name>timeOutTime</param-name>
+            <param-value>120000</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>CounterServlet</servlet-name>

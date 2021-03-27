@@ -2,11 +2,11 @@
 
 test_connection=$(curl -s -d "end testConnection" http://localhost:8080/web-counter/)
 
-if echo test_connection | grep -q "test"
+if echo "$test_connection" | grep -q "testConnection"
 then
-	echo Servelt online
+	echo Servlet online
 else
-	echo Could not connect to servlet
+	echo Could not connect to the servlet
 	exit -1
 fi
 
@@ -22,5 +22,20 @@ then
 	echo Test 1 passed
 else
 	echo Test 1 failed
+	exit -1
+fi
+
+# Test 2
+for i in {1..1000}
+do
+	curl -s -d "1" http://localhost:8080/web-counter/ > /dev/null &
+done
+sleep 1 # Give some time for curl to make requests
+test2=$(curl -s -d "end test2" http://localhost:8080/web-counter/)
+if [ "$test2" == "1000 test2" ]
+then 
+	echo Test 2 passed
+else
+	echo Test 2 failed
 	exit -1
 fi

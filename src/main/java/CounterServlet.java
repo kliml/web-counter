@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -19,9 +18,11 @@ import java.util.regex.Pattern;
     asyncSupported = true)
 public class CounterServlet extends HttpServlet {
 
-  final Pattern whiteSpacePattern = Pattern.compile("\\s+");
+  private final Pattern whiteSpacePattern = Pattern.compile("\\s+");
+  private long timeOutTime = 120000;
+  private final Logger logger = Logger.getLogger(CounterServlet.class.getName());
 
-  AsyncListener asyncListener = new AsyncListener() {
+  private final AsyncListener asyncListener = new AsyncListener() {
     @Override
     public void onComplete(AsyncEvent event) throws IOException {
     }
@@ -29,6 +30,7 @@ public class CounterServlet extends HttpServlet {
     @Override
     public void onTimeout(AsyncEvent event) throws IOException {
       Dispatcher.removeConnection(event.getAsyncContext());
+
     }
 
     @Override
@@ -43,49 +45,40 @@ public class CounterServlet extends HttpServlet {
   @Override
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
+    timeOutTime = Long.parseLong(config.getInitParameter("timeOutTime"));
+    logger.info("CounterServlet initialized");
   }
 
   @Override
   public void destroy() {
     super.destroy();
+    logger.info("CounterServlet destroyed");
   }
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-    String s = request.getReader().readLine();
-
-    if (s == null) {
+    String requestBody = request.getReader().readLine();
+    if (requestBody == null) {
       response.sendError(400, "Empty request body");
+      logger.info("Bad request");
       return;
     }
 
-    String[] sd = whiteSpacePattern.split(s);
-
-    if (!validateBody(sd)) {
+    String[] requestBodyContent = whiteSpacePattern.split(requestBody);
+    if (!validateBody(requestBodyContent)) {
       response.sendError(400, "Invalid request");
       return;
     }
 
-    if (sd.length == 1) {
+    AsyncContext asyncContext = request.startAsync(request, response);
+    asyncContext.addListener(asyncListener);
+    asyncContext.setTimeout(timeOutTime);
 
-      long val = Long.parseLong(sd[0]);
-      Dispatcher.addToCalculation(val);
-
-      AsyncContext asyncContext = request.startAsync(request, response);
-      asyncContext.addListener(asyncListener);
-      asyncContext.setTimeout(120000);
-
-      Dispatcher.addConnection(asyncContext);
-
-    } else if (sd.length == 2) {
-
-      AsyncContext asyncContext = request.startAsync(request, response);
-      asyncContext.addListener(asyncListener);
-      asyncContext.setTimeout(120000);
-
-      Dispatcher.addConnection(asyncContext);
-      Dispatcher.endCalculation(sd[1]);
+    if (requestBodyContent.length == 1) {
+      long val = Long.parseLong(requestBodyContent[0]);
+      Dispatcher.addToCalculation(asyncContext, val);
+    } else if (requestBodyContent.length == 2) {
+      Dispatcher.finishCalculation(asyncContext, requestBodyContent[1]);
     }
   }
 

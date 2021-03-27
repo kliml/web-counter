@@ -1,8 +1,6 @@
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletResponse;
 import java.io.PrintWriter;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -14,8 +12,24 @@ public class Dispatcher {
   private static final AtomicLong sum = new AtomicLong(0);
   private static final ConcurrentLinkedQueue<AsyncContext> contextsHolder = new ConcurrentLinkedQueue<AsyncContext>();
 
-  public static void addConnection(AsyncContext asyncContext) {
+  /**
+   * Adds requests value to the sum and store connection.
+   * @param asyncContext information about connection.
+   * @param value value from requests body.
+   */
+  public static synchronized void addToCalculation(AsyncContext asyncContext, long value) {
     contextsHolder.add(asyncContext);
+    sum.addAndGet(value);
+  }
+
+  /**
+   * Stores information about connection and calls for a response.
+   * @param asyncContext information about connection.
+   * @param tag tag to be passed in response.
+   */
+  public static synchronized void finishCalculation(AsyncContext asyncContext, String tag) {
+    contextsHolder.add(asyncContext);
+    sendRespond(tag);
   }
 
   /**
@@ -28,20 +42,11 @@ public class Dispatcher {
   }
 
   /**
-   * Add long value to the sum.
-   * @param value long parsed from request body.
-   */
-  public static void addToCalculation(long value) {
-    sum.addAndGet(value);
-  }
-
-  /**
-   * End calculation by responding to all active connections with the accumulated number and a tag.
+   * Respond to all active connections with the accumulated number and a tag.
    * Reset stored sum.
-   * @param key a tag that follows number in the response.
+   * @param tag a tag that follows number in the response.
    */
-  public static synchronized void endCalculation(String key) {
-
+  private static synchronized void sendRespond(String tag) {
     long val = sum.getAndSet(0);
 
     while(!contextsHolder.isEmpty()) {
@@ -50,7 +55,7 @@ public class Dispatcher {
       response.setContentType("text/plain");
       try {
         PrintWriter writer = asyncContext.getResponse().getWriter();
-        writer.print(String.format("%d %s", val, key));
+        writer.print(String.format("%d %s", val, tag));
         writer.flush();
         writer.close();
         asyncContext.complete();
