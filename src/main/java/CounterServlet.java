@@ -60,13 +60,14 @@ public class CounterServlet extends HttpServlet {
     String requestBody = request.getReader().readLine();
     if (requestBody == null) {
       response.sendError(400, "Empty request body");
-      logger.info("Bad request");
+      logger.info("Request with empty body");
       return;
     }
 
     String[] requestBodyContent = whiteSpacePattern.split(requestBody);
     if (!validateBody(requestBodyContent)) {
       response.sendError(400, "Invalid request");
+      logger.info("Invalid request");
       return;
     }
 

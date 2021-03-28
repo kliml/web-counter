@@ -37,7 +37,7 @@ public class Dispatcher {
    * Call only occurs if connection is timed out.
    * @param asyncContext context to be removed.
    */
-  public static void removeConnection(AsyncContext asyncContext) {
+  public static synchronized void removeConnection(AsyncContext asyncContext) {
     contextsHolder.remove(asyncContext);
   }
 
