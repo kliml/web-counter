@@ -1,7 +1,7 @@
 # web-counter
 
 Simple Java servlet to count numbers from HTTP POST requests. \
-Tested on Tomcat with 1000 active connections. \
+Builds into a war file and tested on Tomcat with 1000 active connections. \
 Deployed servlet address without modifications - `http://localhost:8080/web-counter/`
 
 ## Request types
