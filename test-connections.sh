@@ -53,10 +53,10 @@ answers=("$invalid1"
 
 for answer in "${answers[@]}"
 do
- if ! echo "$answer" | grep -q "Status 400"
- then
- 	echo Test 3 failed
- 	exit -1
- fi
+	if ! echo "$answer" | grep -q "Status 400"
+	then
+		echo Test 3 failed
+ 		exit -1
+	fi
 done
 echo Test 3 passed
