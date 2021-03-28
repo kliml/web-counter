@@ -25,20 +25,23 @@ public class CounterServlet extends HttpServlet {
   private final AsyncListener asyncListener = new AsyncListener() {
     @Override
     public void onComplete(AsyncEvent event) throws IOException {
+      logger.info("Request completed");
     }
 
     @Override
     public void onTimeout(AsyncEvent event) throws IOException {
       Dispatcher.removeConnection(event.getAsyncContext());
-
+      logger.info("Request timed out");
     }
 
     @Override
     public void onError(AsyncEvent event) throws IOException {
+      logger.info("Internal error");
     }
 
     @Override
     public void onStartAsync(AsyncEvent event) throws IOException {
+      logger.info("Started async on valid request");
     }
   };
 
@@ -60,14 +63,14 @@ public class CounterServlet extends HttpServlet {
     String requestBody = request.getReader().readLine();
     if (requestBody == null) {
       response.sendError(400, "Empty request body");
-      logger.info("Request with empty body");
+      logger.info("Dismissed request with empty body");
       return;
     }
 
     String[] requestBodyContent = whiteSpacePattern.split(requestBody);
     if (!validateBody(requestBodyContent)) {
       response.sendError(400, "Invalid request");
-      logger.info("Invalid request");
+      logger.info("Dismissed invalid request");
       return;
     }
 
