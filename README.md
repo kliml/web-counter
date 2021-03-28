@@ -6,7 +6,7 @@ Deployed servlet address without modifications - `http://localhost:8080/web-coun
 
 ## Request types
 
-- Single number in body - keeps the number, does not respond yet.
+- Single number - keeps the number, does not respond yet.
 - Keyword "end" followed by ID - responds with the sum of all received numbers to all open requests followed by the same ID.
 
 ## Building
