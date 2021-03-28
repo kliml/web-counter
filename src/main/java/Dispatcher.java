@@ -1,6 +1,8 @@
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletResponse;
 import java.io.PrintWriter;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -9,8 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class Dispatcher {
 
-  private static final AtomicLong sum = new AtomicLong(0);
-  private static final ConcurrentLinkedQueue<AsyncContext> contextsHolder = new ConcurrentLinkedQueue<AsyncContext>();
+  private static long sum = 0;
+  private static final Deque<AsyncContext> contextsHolder = new LinkedList<>();
 
   /**
    * Adds requests value to the sum and store connection.
@@ -19,7 +21,7 @@ public class Dispatcher {
    */
   public static synchronized void addToCalculation(AsyncContext asyncContext, long value) {
     contextsHolder.add(asyncContext);
-    sum.addAndGet(value);
+    sum += value;
   }
 
   /**
@@ -47,15 +49,13 @@ public class Dispatcher {
    * @param tag a tag that follows number in the response.
    */
   private static synchronized void sendRespond(String tag) {
-    long val = sum.getAndSet(0);
-
     while(!contextsHolder.isEmpty()) {
       AsyncContext asyncContext = contextsHolder.poll();
       ServletResponse response = asyncContext.getResponse();
       response.setContentType("text/plain");
       try {
         PrintWriter writer = asyncContext.getResponse().getWriter();
-        writer.print(String.format("%d %s", val, tag));
+        writer.print(String.format("%d %s", sum, tag));
         writer.flush();
         writer.close();
         asyncContext.complete();
@@ -63,5 +63,6 @@ public class Dispatcher {
         asyncContext.complete();
       }
     }
+    sum = 0;
   }
 }
