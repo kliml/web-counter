@@ -14,8 +14,10 @@ Deployed servlet address without modifications - `http://localhost:8080/web-coun
 Build war file with gradle `gradle war` or by using scripts:
 - `gradlew war` for Linux.
 - `gradlew.bat war` for Windows.
+
+War file will be located at `build/libs/web-counter.war`
   
-Or use prebuilt war file.
+Or use prebuilt war file from root folder.
 
 ## Testing
 
