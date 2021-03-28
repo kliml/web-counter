@@ -3,8 +3,6 @@ import javax.servlet.ServletResponse;
 import java.io.PrintWriter;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Static class responsible for holding active connections and sum of all numbers.
@@ -31,7 +29,7 @@ public class Dispatcher {
    */
   public static synchronized void finishCalculation(AsyncContext asyncContext, String tag) {
     contextsHolder.add(asyncContext);
-    sendRespond(tag);
+    sendResponse(tag);
   }
 
   /**
@@ -48,7 +46,7 @@ public class Dispatcher {
    * Reset stored sum.
    * @param tag a tag that follows number in the response.
    */
-  private static synchronized void sendRespond(String tag) {
+  private static synchronized void sendResponse(String tag) {
     while(!contextsHolder.isEmpty()) {
       AsyncContext asyncContext = contextsHolder.poll();
       ServletResponse response = asyncContext.getResponse();
